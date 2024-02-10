@@ -23,15 +23,22 @@ for i in predicted:
     print(i[0],i[1])
 globalres=[]
 for i in range(1,10000):
-    res=[]
     charchoice=np.random.choice(np.arange(charachtersp.size),size=i,p=charachtersp)
     weaponl=vfunc(charchoice)
     resultstr=vfunc2(charchoice,weaponl)
     outcome,counts=np.unique(resultstr,return_counts=True)
     counts=vfunc3(counts,numsim=i)
     diff=0
-    for e in range(counts.size):
-        diff+=abs(predicted[e][1]-counts[e])
+    for e in range(len(predicted)):
+        index=-1
+        for r in range(len(outcome)):
+            if outcome[r]==predicted[e][0]:
+                index=r
+                break
+        if index==-1:
+            diff+=predicted[e][1]
+            continue
+        diff+=abs(predicted[e][1]-counts[r])
     globalres.append((i,diff))
 df=pd.DataFrame(globalres,columns=["Num sims","Probability Diff"])
 sns.set_theme()
