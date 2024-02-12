@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.stats import multivariate_normal
 
 def multivariate_normal_density(x, mean, covariance):
     """
@@ -30,10 +31,31 @@ def multivariate_normal_density(x, mean, covariance):
     
     return density
 
-# Example usage
-mean = np.array([0, 0])
-covariance = np.array([[1, 0.5], [0.5, 2]])
-x = np.array([1, 1])
+# Define scenarios
+scenarios = [
+    {"mean": np.array([0, 0]), "covariance": np.eye(2)},
+    {"mean": np.array([0, 0]), "covariance": np.diag([1, 2])},
+    {"mean": np.array([0, 0]), "covariance": np.array([[2, 0.5], [0.5, 1]])}
+]
 
-density = multivariate_normal_density(x, mean, covariance)
-print("Density:", density)
+# Test each scenario
+for i, scenario in enumerate(scenarios, 1):
+    mean = scenario["mean"]
+    covariance = scenario["covariance"]
+    print(f"Scenario {i}:")
+    print("Mean:", mean)
+    print("Covariance:")
+    print(covariance)
+    
+    # Generate a random point
+    x = np.random.rand(len(mean)) * 10  # Random point within 10 in each dimension
+    
+    # Compute density using custom function
+    custom_density = multivariate_normal_density(x, mean, covariance)
+    
+    # Compute density using scipy's function
+    scipy_density = multivariate_normal.pdf(x, mean, covariance)
+    
+    print("Custom Density:", custom_density)
+    print("SciPy Density:", scipy_density)
+    print("\n")
