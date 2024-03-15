@@ -1,6 +1,9 @@
 import numpy as np
-from numba import jit
-@jit
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+#from numba import jit
+#@jit
 def simulate_ffi(v, x0, a,tau,alpha,sigma=1, dt=1e-3,max_time=10.):
     """
     Simulates one realization of the diffusion process given
@@ -27,15 +30,15 @@ def simulate_ffi(v, x0, a,tau,alpha,sigma=1, dt=1e-3,max_time=10.):
 
     Returns:
     --------
-    (x, c) - a tuple of response time (y - float) and a 
-        binary decision (c - int) 
+    (x, c, log) - a tuple of response time (y - float) and a 
+        binary decision (c - int) and log of accumulators at each time step
     """
 
     # Inits (process starts at relative starting point)
     num_steps = tau
-    xlog=[]
+    xlog={}
     x = x0.copy()
-    xlog.append((0,x))
+    xlog[0]=x.copy()
     const = sigma*np.sqrt(dt)
     assert x.shape[0] == v.shape[0]
     J = x0.shape[0]
@@ -54,26 +57,53 @@ def simulate_ffi(v, x0, a,tau,alpha,sigma=1, dt=1e-3,max_time=10.):
 
         # Increment step counter
         num_steps += dt
-        xlog.append((num_steps,x))
+        xlog[num_steps]=x.copy()
 
         # Check for boundary hitting
         if any(x >= a):
             break
     
-    return (round(num_steps, 3), x.argmax())
+    return (round(num_steps, 3), x.argmax(),xlog)
 parameters = {
-    'v': np.array([1., 1., 3.]),
-    'x0': np.zeros(3),
+    'v': np.array([1., 1., 3.,2.]),
+    'x0': np.zeros(4),
     'a': 1.,
     'tau': 0.5,
     'alpha': 0.6,
 }
-parameters2 = {
-    'v': np.array([1., 1., 3.]),
-    'x0': np.zeros(3),
+res=simulate_ffi(**parameters)
+intrestedValue=res[2]
+intrestedValueTransform={}
+for i in range(parameters["x0"].size):
+    intrestedValueTransform["Accumulator "+ str(i)]=[]
+for x in intrestedValue:
+    #intrestedValueTransform["Time"].append(round(x,3))
+    accumcount=0
+    for i in intrestedValue[x]:
+        intrestedValueTransform["Accumulator "+ str(accumcount)].append(i)
+        accumcount+=1
+#print(intrestedValueTransform["Time"])
+data=pd.DataFrame.from_dict(intrestedValueTransform)
+print(data)
+sns.set_theme()
+sns.relplot(data=data, kind="line")
+print(res[0],res[1])
+#plt.show()
+log=np.array([])
+for i in range(40):
+    parameters['alpha']+=2
+    res=simulate_ffi(**parameters)
+    log=np.append(log, res[0])
+print(np.mean(log))
+parameters = {
+    'v': np.array([1., 1., 3.,2.]),
+    'x0': np.zeros(4),
     'a': 1.,
     'tau': 0.5,
-    'beta': 0.6,
-    'kappa': 0.2
+    'alpha': 0.6,
 }
-print(simulate_ffi(**parameters))
+log=np.array([])
+for i in range(40):
+    res=simulate_ffi(**parameters)
+    log=np.append(log, res[0])
+print(np.mean(log))
