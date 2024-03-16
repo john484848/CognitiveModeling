@@ -64,31 +64,40 @@ def simulate_ffi(v, x0, a,tau,alpha,sigma=1, dt=1e-3,max_time=10.):
             break
     
     return (round(num_steps, 3), x.argmax(),xlog)
+def graph():
+    """
+    generates graph of the accumulators for run
+    """
+    parameters = {
+            'v': np.array([1., 1., 3.,2.]),
+            'x0': np.zeros(4),
+            'a': 1.,
+            'tau': 0.5,
+            'alpha': 0.6,
+            }
+    res=simulate_ffi(**parameters)
+    intrestedValue=res[2]
+    intrestedValueTransform={}
+    for i in range(parameters["x0"].size):
+        intrestedValueTransform["Accumulator "+ str(i)]=[]
+    for x in intrestedValue:
+        accumcount=0
+        for i in intrestedValue[x]:
+            intrestedValueTransform["Accumulator "+ str(accumcount)].append(i)
+            accumcount+=1
+    data=pd.DataFrame.from_dict(intrestedValueTransform)
+    sns.set_theme()
+    sns.relplot(data=data, kind="line")
+    plt.show()
+
+
 parameters = {
-    'v': np.array([1., 1., 3.,2.]),
-    'x0': np.zeros(4),
-    'a': 1.,
-    'tau': 0.5,
-    'alpha': 0.6,
-}
-res=simulate_ffi(**parameters)
-intrestedValue=res[2]
-intrestedValueTransform={}
-for i in range(parameters["x0"].size):
-    intrestedValueTransform["Accumulator "+ str(i)]=[]
-for x in intrestedValue:
-    #intrestedValueTransform["Time"].append(round(x,3))
-    accumcount=0
-    for i in intrestedValue[x]:
-        intrestedValueTransform["Accumulator "+ str(accumcount)].append(i)
-        accumcount+=1
-#print(intrestedValueTransform["Time"])
-data=pd.DataFrame.from_dict(intrestedValueTransform)
-print(data)
-sns.set_theme()
-sns.relplot(data=data, kind="line")
-print(res[0],res[1])
-#plt.show()
+        'v': np.array([1., 1., 3.,2.]),
+        'x0': np.zeros(4),
+        'a': 1.,
+        'tau': 0.5,
+        'alpha': 0.6,
+    }
 log=np.array([])
 for i in range(40):
     parameters['alpha']+=2
